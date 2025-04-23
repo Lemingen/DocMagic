@@ -1,1 +1,1 @@
-# DocMagic
+# DocMagic project

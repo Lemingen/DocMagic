@@ -1,0 +1,55 @@
+services:
+  backend:
+    container_name: doc_backend
+    image: doc_magic_instance
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      mq:
+        condition: service_healthy
+
+
+  db:
+    env_file:
+      - .env
+    container_name: doc_postgres
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  mq:
+    container_name: doc_rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "15673:15672"  # порт для веб-менеджера RabbitMQ
+      - "5673:5672"    # основной порт RabbitMQ
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_running" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  pg-data:
+  rabbitmq_data:

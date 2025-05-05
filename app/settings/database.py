@@ -19,6 +19,10 @@ sync_engine = create_engine(
     echo = True
 )
 
+async def get_async_session() -> AsyncSession:
+    async with async_session_factory() as session:
+        yield session
+
 sync_session_factory = sessionmaker(bind=sync_engine)
 
 class Base(DeclarativeBase):

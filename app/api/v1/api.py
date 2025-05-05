@@ -1,9 +1,17 @@
 from typing import List
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.schemas.schemas import DocumentResponse, MessageResponse, TextResponse
-from app.view.service import DocumentService
+from app.view.service import DocumentService, LocalStorage, PostgresRepository
+from app.settings.database import get_async_session
 
 app = FastAPI()
+
+def get_document_service(session: AsyncSession = Depends(get_async_session)) -> DocumentService:
+    storage = LocalStorage()
+    repository = PostgresRepository(session=session)
+    return DocumentService(storage=storage, repository=repository)
 
 @app.post(
     "/upload_files/",
@@ -16,8 +24,10 @@ app = FastAPI()
         422: {"description": "Ошибка валидации файлов (например, пустой список)"}
     }
 )
-async def upload_file(files: List[UploadFile] = File(...)):
-    service = DocumentService()
+async def upload_file(
+    files: List[UploadFile] = File(...),
+    service: DocumentService = Depends(get_document_service),
+):
     return await service.upload_file(files)
 
 @app.delete(
@@ -30,8 +40,10 @@ async def upload_file(files: List[UploadFile] = File(...)):
     },
     response_model=MessageResponse
 )
-async def delete_file(id_doc: int):
-    service = DocumentService()
+async def delete_file(
+    id_doc: int,
+    service: DocumentService = Depends(get_document_service),
+):
     await service.delete_file(id_doc)
     return {"message": f"Документ с ID {id_doc} успешно удалён."}
 
@@ -45,8 +57,10 @@ async def delete_file(id_doc: int):
     },
     response_model=MessageResponse
 )
-async def doc_analyse(id_doc: int):
-    service = DocumentService()
+async def doc_analyse(
+    id_doc: int,
+    service: DocumentService = Depends(get_document_service),
+):
     service.doc_analyse(id_doc)
     return {"message": f"Картинка {id_doc} поставлена в очередь на обработку."}
 
@@ -60,7 +74,9 @@ async def doc_analyse(id_doc: int):
     },
     response_model=TextResponse
 )
-async def get_text(id_doc: int):
-    service = DocumentService()
+async def get_text(
+    id_doc: int,
+    service: DocumentService = Depends(get_document_service)
+):
     text = await service.get_text(id_doc)
     return {"text": text}

@@ -24,5 +24,8 @@ class Settings(BaseSettings):
     def sync_database_url(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT_POSTGRES}/{self.DB_NAME}"
 
+    @property
+    def dev_url(self) -> str:
+        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{'localhost'}:{5440}/{'doc_magic_db'}"
 
 settings = Settings()

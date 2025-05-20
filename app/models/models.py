@@ -17,3 +17,4 @@ class DocumentsTextOrm(Base):
     id: Mapped[int] = mapped_column(nullable=False, primary_key=True)
     id_doc: Mapped[int] = mapped_column(ForeignKey('Documents.id', ondelete='CASCADE'), nullable=False)
     text: Mapped[str] = mapped_column(nullable=False)
+    #text2: Mapped[str] = mapped_column(nullable=True)

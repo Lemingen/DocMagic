@@ -16,7 +16,7 @@
 
 ## 🧱 Стек технологий
 
-- **FastAPI**
+- **FastAPI + Pydantic**
 - **Tesseract OCR**
 - **PostgreSQL + SQLAlchemy**
 - **RabbitMQ + Celery** 
